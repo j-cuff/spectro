@@ -1,0 +1,122 @@
+{
+	"metadata": {
+		"annotations": {},
+		"name": "fdfds",
+		"labels": {}
+	},
+	"spec": {
+		"clusterType": "PureAttach",
+        "cloudConfig": {
+			"values": "---\napiVersion: cluster.x-k8s.io/v1beta1\nkind: Cluster\nmetadata:\n  name: \"fdfds\"\nspec:\n  clusterNetwork:\n    pods:\n      cidrBlocks: [ \"192.168.0.0/16\" ]\n  infrastructureRef:\n    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1\n    kind: AWSCluster\n    name: \"fdfds\"\n  controlPlaneRef:\n    kind: KubeadmControlPlane\n    apiVersion: controlplane.cluster.x-k8s.io/v1beta1\n    name: \"control-plane-pool\"\n---\napiVersion: infrastructure.cluster.x-k8s.io/v1beta1\nkind: AWSCluster\nmetadata:\n  name: \"fdfds\"\nspec:\n  region: \"us-east-1\"\n  sshKeyName: \"fdsf\"\n\n---\n\n"
+		},
+		"machinePoolConfig": [
+			{
+				"poolConfig": {
+					"name": "control-plane-pool",
+					"labels": [
+						"control-plane"
+					],
+					"isControlPlane": true,
+					"useControlPlaneAsWorker": false,
+					"taints": [],
+					"additionalLabels": {},
+					"nodeRepaveInterval": 0,
+					"updateStrategy": {
+						"type": "RollingUpdateScaleOut"
+					},
+					"machinePoolProperties": {
+						"archType": "amd64"
+					},
+					"size": 1
+				},
+				"cloudConfig": {
+					"values": "---\nkind: KubeadmControlPlane\napiVersion: controlplane.cluster.x-k8s.io/v1beta1\nmetadata:\n  name: \"control-plane-pool\"\nspec:\n  replicas: 1\n  machineTemplate:\n    infrastructureRef:\n      kind: AWSMachineTemplate\n      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1\n      name: \"fdfds-control-plane\"\n  kubeadmConfigSpec:\n    initConfiguration:\n      nodeRegistration:\n        name: '{{ ds.meta_data.local_hostname }}'\n        kubeletExtraArgs:\n          cloud-provider: aws\n    clusterConfiguration:\n      apiServer:\n        extraArgs:\n          cloud-provider: aws\n      controllerManager:\n        extraArgs:\n          cloud-provider: aws\n    joinConfiguration:\n      nodeRegistration:\n        name: '{{ ds.meta_data.local_hostname }}'\n        kubeletExtraArgs:\n          cloud-provider: aws\n  version: \"1.29\"\n---\nkind: AWSMachineTemplate\napiVersion: infrastructure.cluster.x-k8s.io/v1beta1\nmetadata:\n  name: \"fdfds-control-plane\"\nspec:\n  template:\n    spec:\n      ami:\n        id: \"dsldjlkfj\"\n      instanceType: \"t3\"\n      iamInstanceProfile: \"control-plane.cluster-api-provider-aws.sigs.k8s.io\"\n      sshKeyName: \"fdsf\"\n\n---\n\n\n"
+				}
+			},
+			{
+				"poolConfig": {
+					"name": "worker-pool",
+					"labels": [
+						"worker"
+					],
+					"taints": [],
+					"additionalLabels": {},
+					"nodeRepaveInterval": 0,
+					"updateStrategy": {
+						"type": "RollingUpdateScaleOut"
+					},
+					"machinePoolProperties": {
+						"archType": "amd64"
+					},
+					"size": 1
+				},
+				"cloudConfig": {
+					"values": "---\napiVersion: cluster.x-k8s.io/v1beta1\nkind: MachineDeployment\nmetadata:\n  name: \"worker-pool\"\nspec:\n  clusterName: \"fdfds\"\n  replicas: 1\n  selector:\n    matchLabels:\n  template:\n    spec:\n      clusterName: \"fdfds\"\n      version: \"1.29\"\n      bootstrap:\n        configRef:\n          name: \"fdfds-md-0\"\n          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1\n          kind: KubeadmConfigTemplate\n      infrastructureRef:\n        name: \"fdfds-md-0\"\n        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1\n        kind: AWSMachineTemplate\n---\napiVersion: infrastructure.cluster.x-k8s.io/v1beta1\nkind: AWSMachineTemplate\nmetadata:\n  name: \"fdfds-md-0\"\nspec:\n  template:\n    spec:\n      ami:\n        id: \"798789\"\n      instanceType: \"t3\"\n      iamInstanceProfile: \"nodes.cluster-api-provider-aws.sigs.k8s.io\"\n      sshKeyName: \"fdsf\"\n\n---\napiVersion: bootstrap.cluster.x-k8s.io/v1beta1\nkind: KubeadmConfigTemplate\nmetadata:\n  name: \"fdfds-md-0\"\nspec:\n  template:\n    spec:\n      joinConfiguration:\n        nodeRegistration:\n          name: '{{ ds.meta_data.local_hostname }}'\n          kubeletExtraArgs:\n            cloud-provider: aws\n"
+				}
+			}
+		],
+		"cloudAccountUid": "66a9e72e1eeba8863b505944",
+		"edgeHostUid": "",
+		"profiles": [
+			{
+				"uid": "66a9e8b07e8ab4cede546ebb",
+				"packValues": [
+					{
+						"tag": "1.0.0",
+						"version": "1.0.0",
+						"name": "custom_os",
+						"type": "spectro",
+						"values": "# Specify Operating System (OS) image and other settings during the cluster creation in KubeadmControlplane or MachinDeployment specifications, or in the respective Custom Resource Definitions (CRD).",
+						"fips": false,
+						"manifests": []
+					},
+					{
+						"tag": "1.0.0",
+						"version": "1.0.0",
+						"name": "kubernetes-custom",
+						"type": "spectro",
+						"values": "# Specify Operating System (OS) image and other settings during the cluster creation in KubeadmControlplane or MachinDeployment specifications, or in the respective Custom Resource Definitions (CRD).",
+						"fips": false,
+						"manifests": []
+					},
+					{
+						"tag": "3.26.3",
+						"version": "3.26.3",
+						"name": "cni-calico-dummy",
+						"type": "spectro",
+						"values": "",
+						"fips": false,
+						"manifests": []
+					},
+					{
+						"tag": "1.28.0",
+						"version": "1.28.0",
+						"name": "csi-aws-ebs-custom",
+						"type": "spectro",
+						"values": "",
+						"fips": false,
+						"manifests": []
+					}
+				]
+			}
+		],
+		"policies": {
+			"scanPolicy": {}
+		},
+		"clusterConfig": {
+			"machineManagementConfig": {
+				"osPatchConfig": {
+					"schedule": "",
+					"patchOnBoot": false,
+					"rebootIfRequired": false
+				}
+			},
+			"updateWorkerPoolsInParallel": true,
+			"resources": {
+				"namespaces": [],
+				"rbacs": []
+			},
+			"location": null
+		}
+	}
+}
