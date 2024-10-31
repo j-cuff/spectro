@@ -242,7 +242,7 @@ execute scriptblock
 Things to work on
 
 
-
+git clone https://github.com/j-cuff/spectro.git
 ---
 ---
 ---
@@ -420,8 +420,6 @@ kubectl apply -f https://$PALETTE_URL/v1/spectroclusters/$CL_UID/import/manifest
 
 # Validation
 
-
-
 PROJECT_UID="<projectid>"
 AUTH_TOKEN="ey..."
 API_PAYLOAD_FILE="/Full/Path"
@@ -431,8 +429,4 @@ curl --location 'https://$PALETTE_URL/v1/spectroclusters/cloudTypes/awstkg?Proje
   -H 'Content-Type: application/json' \
   -d '@api-payload.json'
 
-curl \
---location 'https://palette.takeover.global.lmco.com/v1/spectroclusters/cloudTypes/awstkg?ProjectUid=66e223d28894f8796fdbc849' \
---header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyI2NmUyMjNkMjg4OTRmODc5Njk5NjlhN2IiOiJzcGVjdHJvY2xvdWQuaHViYmxlIiwiYXVkIjoiNjZlMjIzZDI4ODk0Zjg3OTY5OTY5YTdiIiwiZW1haWwiOiJJMkQyRk9SQ0VUYW56dUt1YmVybmV0ZXNHcmlkLmRsLUVJVEBleGNoLmVtcy5sbWNvLmNvbSIsImV4cCI6MTcyOTgwODEzOSwiZmFtaWx5X25hbWUiOiJ0a2ciLCJnaXZlbl9uYW1lIjoiaTJkMiIsImlhdCI6MTcyOTc5MzczNywic3ViIjoiSTJEMkZPUkNFVGFuenVLdWJlcm5ldGVzR3JpZC5kbC1FSVRAZXhjaC5lbXMubG1jby5jb20iLCJ0b2tlbiI6eyJBdXRoTW9kZSI6eyJJQVQiOiIyMDI0LTEwLTI0VDEyOjM1OjQ1LjE1NDA1MDEzMloiLCJNb2RlIjoiand0VG9rZW4iLCJTZXNzaW9uSWQiOiI5YTdiMTU4YSJ9LCJBdXRoU2NvcGVzIjpudWxsLCJDbHVzdGVyVWlkIjoiIiwiRGF0YVNlc3Npb25JZCI6IiIsIkVkZ2VIb3N0VWlkIjoiIiwiRmlyc3ROYW1lIjoiaTJkMiIsIkdyb3VwcyI6W10sIklzSW50ZXJuYWwiOmZhbHNlLCJJc1NlcnZpY2UiOmZhbHNlLCJJc1N5c3RlbSI6ZmFsc2UsIklzVXBncmFkZSI6ZmFsc2UsIkxhc3ROYW1lIjoidGtnIiwiT3JnSWQiOiJ2ZXJ0ZXgiLCJPdmVybG9yZFVpZCI6IiIsIlNjb3BlUmVzb3VyY2VVaWQiOiIiLCJTZXJ2aWNlVmVyc2lvbiI6IiIsIlNlc3Npb25JZCI6IiIsIlNzb05hbWVJZCI6IiIsIlNzb1Nlc3Npb25JZCI6IiIsIlN2Y1NlY3JldCI6IiIsIlN5c3RlbUFkbWluIjp7IkFkbWluVHlwZSI6IiIsIlVpZCI6IiJ9LCJUZW5hbnRVaWQiOiI2NmUyMjNkMjg4OTRmODc5Njk5NjlhN2IiLCJVc2VyRW1haWwiOiJJMkQyRk9SQ0VUYW56dUt1YmVybmV0ZXNHcmlkLmRsLUVJVEBleGNoLmVtcy5sbWNvLmNvbSIsIlVzZXJVaWQiOiI2NmUyMjNkMjg4OTRmODc5Njk5NjlhN2IifX0.jQTuKZzCdTU7ZEVcc_c_39EDLkLNSizP5YYVEhZHnFg' \
---header 'Content-Type: application/json' \
---data '
+
