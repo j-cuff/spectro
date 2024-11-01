@@ -11,15 +11,7 @@
     - Follow internal processes for the backup
  
 >## 2. Validate Prereqs
-- Proxy Settings may need to be configured in terminal(s)  
-  ```
-  export http_proxy=http://proxy-zsgov.external.lmco.com:80  
-  export https_proxy=http://proxy-zsgov.external.lmco.com:80  
-  export no_proxy=*.local,169.254/16,.lmco.com,*.us.lmco.com,localhost,127.0.0.1,*.amazonaws.com  
-  export HTTP_PROXY=http://proxy-zsgov.external.lmco.com:80  
-  export HTTPS_PROXY=http://proxy-zsgov.external.lmco.com:80  
-  export NO_PROXY=*.local,169.254/16,.lmco.com,*.us.lmco.com,localhost,127.0.0.1,*.amazonaws.com  
-  ```
+Proxy info
 - Test for prereqs cli's (kubectl, jq, clusterctl, clusterawsadm, cluster profile, aws cloud account)
   - External Sites
     | Tool | Link |
