@@ -1,83 +1,88 @@
-git clone https://github.com/j-cuff/spectro.git
----
----
----
+- From: git clone https://github.com/j-cuff/spectro.git
 # SpectroCloud Cluster Takeover Procedure
-## Utilize the Runbook as the source of truth
+> ### Utilize the Runbook as the source of truth
 - [Runbook](Runbook.md)
 - https://docs.google.com/document/d/1BMvVPqmgnBNipwGqcMTLnRaM3BDTVPijYSmMowDH29E (internal)
-## Upgrade Palette Vertex to the latest available version
+> ### Upgrade Palette Vertex to the latest available version
 - This allows for all bug fixes, security updates, and features to be utilized for the takeover.
 - Current Required Version = 4.5.4
-
 ## Discovery & Cloud Preparation
 - See Runbook
 ## Pre-takeover Readiness & Preparation
-## Perform Cluster Backup Procedures
-- Takeover Cluster
-- TKG Management Cluster
-   on this cluster as well as the TKG MGMT Cluster to recover in case of failure.
-    - Follow internal processes for the backup
+> ### Perform Cluster Backup Procedures
+- Follow current internal processes for the cluster backups
+- Create backup of Takeover Cluster
+- Create backup of TKG-Management Cluster
 
-## EDIT and SET Name of the cluster being taken over
-```
-TC_NAME=<takeover-cluster-name>
-```
-## SET Full Path to Takeover Cluster Admin Kubeconfig
-```
-TC_ADMIN_KUBECONFIG="$HOME/workspace/spectro/tc-admin-kube.config"
-```
-## SET Full Path to TKG-MGMT Cluster Admin Kubeconfig
-```
-TKG_MGMT_KUBECONFIG="$HOME/workspace/spectro/tkg-mgmt-kube.config"
-```
-## Palette FQDN (ex. vertex.mydomain.com)
-```
-PALETTE_URL=palette.takeover.global.lmco.com
-```
-## Create Dir structure, Extract takeover files, set TAKEOVER_ROOT
-```
-single command below
-
-mkdir -p $HOME/workspace/spectro/$TC_NAME && tar -xvf $HOME/workspace/spectro/takeoverfiles.tar.gz -C $HOME/workspace/spectro/$TC_NAME && cd $HOME/workspace/spectro/$TC_NAME/takeover-files && export TAKEOVER_ROOT=$(pwd) && echo $TAKEOVER_ROOT && echo "SUCCESS" || echo "ERROR"
-```
-## Setup palettectl cli, add it to the PATH
-```
-cp $TAKEOVER_ROOT/bin/palettectl-$(arch) $TAKEOVER_ROOT/bin/palettectl && chmod +x $TAKEOVER_ROOT/bin/palettectl && export PATH=$PATH:$TAKEOVER_ROOT/bin/ && echo "SUCCESS" || echo "ERROR"
-```
-## Create clusterctl.yaml file 
-```
-echo -e "overridesFolder: $TAKEOVER_ROOT/overrides\n\n\nCLUSTERCTL_LOG_LEVEL: 5" > $TAKEOVER_ROOT/clusterctl.yaml
-```
-## SWITCH to TKG-MGMT Cluster Context
-```
-export KUBECONFIG=$TKG_MGMT_KUBECONFIG
-kubectl config get-contexts
-```
-- Validate TKG-MGMT Cluster Context is set
-
-## Verify TKG-MGMT Cluster is managing the Takeover Cluster
-```
-CLS_NAME=$(kubectl get cluster $TC_NAME -o=jsonpath='{.spec.infrastructureRef.name}') && echo "Found: $CLS_NAME" || echo "Found: ERROR"
-CLS_NAMESPACE=$(kubectl get cluster $TC_NAME -o=jsonpath='{.spec.infrastructureRef.namespace}') && echo "Found: $CLS_NAMESPACE" || echo "Found: ERROR"
-```
-## Delete Autoscaler Deployment for Takoever Cluser if it exists
-```
-kubectl get deployments | grep autoscaler | grep $CLS_NAME
-```
-- If it exists:
+## Prepare IDE Environment for Takeover
+> ### EDIT and SET Name of the cluster being taken over
+- ```shell
+  export TC_NAME=<takeover-cluster-name>
   ```
+> ### Create working directory: $HOME/workspace/spectro
+- This is important for the flow of this document  
+- ```shell
+  mkdir -p $HOME/workspace/spectro
+  ```
+> ### SET Full Path to Takeover Cluster Admin Kubeconfig
+- Move Takeover Cluster Admin KubeConfig to \$HOME/workspace/spectro/tc-admin-kube.config  
+- ```shell
+  export TC_ADMIN_KUBECONFIG="$HOME/workspace/spectro/tc-admin-kube.config"
+  ```
+> ### SET Full Path to TKG-MGMT Cluster Admin Kubeconfig
+- Move TKG-MGMT Cluster Admin KubeConfig to \$HOME/workspace/spectro/tkg-mgmt-kube.config  
+- ```shell
+  export TKG_MGMT_KUBECONFIG="$HOME/workspace/spectro/tkg-mgmt-kube.config"
+  ```
+> ### Palette FQDN (ex. vertex.mydomain.com)
+- ```shell
+  export PALETTE_URL=palette.takeover.global.lmco.com
+  ```
+> ### Create Dir structure, Extract takeover files, set TAKEOVER_ROOT
+- single command below  
+- ```shell
+  mkdir -p $HOME/workspace/spectro/$TC_NAME && tar -xvf $HOME/workspace/spectro/takeoverfiles.tar.gz -C $HOME/workspace/spectro/$TC_NAME && cd $HOME/workspace/spectro/$TC_NAME/takeover-files && export TAKEOVER_ROOT=$(pwd) && echo $TAKEOVER_ROOT && echo "SUCCESS" || echo "ERROR"
+  ```
+> ### Setup palettectl cli, add it to the PATH
+- Note: This should be run from linux server  
+- ```shell
+  cp $TAKEOVER_ROOT/bin/palettectl-$(arch) $TAKEOVER_ROOT/bin/palettectl && chmod +x $TAKEOVER_ROOT/bin/palettectl && export PATH=$PATH:$TAKEOVER_ROOT/bin/ && echo "SUCCESS" || echo "ERROR"
+  ```
+> ### Create clusterctl.yaml file 
+- ```shell
+  echo -e "overridesFolder: $TAKEOVER_ROOT/overrides\n\n\nCLUSTERCTL_LOG_LEVEL: 5" > $TAKEOVER_ROOT/clusterctl.yaml
+  ```
+## Prepare Takeover Source Cluster and TKG-MGMT Cluster Resources
+> ### SWITCH to TKG-MGMT Cluster Context
+- ```shell
+  export KUBECONFIG=$TKG_MGMT_KUBECONFIG
+  kubectl config get-contexts
+  ```
+- Validate TKG-MGMT Cluster Context is set  
+
+> ### AS TKG-MGMT Context: Validate TKG-MGMT Cluster is managing the Takeover Cluster
+- ```shell
+  CLS_NAME=$(kubectl get cluster $TC_NAME -o=jsonpath='{.spec.infrastructureRef.name}') && echo "Found: $CLS_NAME" || echo "NotFound: ERROR"
+  CLS_NAMESPACE=$(kubectl get cluster $TC_NAME -o=jsonpath='{.spec.infrastructureRef.namespace}') && echo "Found: $CLS_NAMESPACE" || echo "Not Found: ERROR"
+  ```
+> ### AS TKG-MGMT Context: Delete Autoscaler Deployment for Takoever Cluster from TKG-MGMT if it exists
+- ```shell
+  kubectl get deployments | grep autoscaler | grep $CLS_NAME
+  ```
+- If it exists:
+- ```shell
   kubectl delete deployment $CLS_NAME-cluser-autoscaler -n $CLS_NAMESPACE
   ```
-## Export Cluster Templates from TKG-MGMT Cluster 
-```
-$TAKEOVER_ROOT/bin/palettectl move -n $CLS_NAMESPACE --clusterName $CLS_NAME --to-template-directory $TAKEOVER_ROOT/takeover-templates
-```
-## Verify and Clean all Takeover Template Files ( >> )
-```
-code $TAKEOVER_ROOT/takeover-templates
-```
-## Generate API Payload to Register a Ghost Cluster with Palette within the Palette GUI
+## Begin Takeover Procedures
+> ### Export Cluster Templates from TKG-MGMT Cluster 
+- ```shell
+  $TAKEOVER_ROOT/bin/palettectl move -n $CLS_NAMESPACE --clusterName $CLS_NAME --to-template-directory $TAKEOVER_ROOT/takeover-templates
+  ```
+> ### Verify and Clean all Takeover Template Files ( >> )
+- ```shell
+  code $TAKEOVER_ROOT/takeover-templates
+  ```
+> ### Generate API Payload to Register a Ghost Cluster with Palette within the Palette GUI
 | Order | Command     | Action                           |
 |-------|-------------|----------------------------------|
 | 1     | **Select:** | TECH PREVIEW / AWS Takeover Test |
@@ -95,11 +100,11 @@ Cluster Config Macros
 |       |                 | ```pbcopy < $TAKEOVER_ROOT/takeover-templates/ClusterTemplate.yaml``` |
 |       | **Enter:**      | AWS_REGION #from clustertemplate.yaml |
 |       | **Enter:**      | AWS_SSH_KEY_NAME #from clustertemplate.yaml |
-Nodes Config - NodePools<br>CONTROL-PLANE-POOL CONFIGURATION
+Nodes Config - NodePools<br>CONTROL-PLANE-POOL CONFIG
 | 10    | **Copy/Paste:** | Replace contents of __Node pool configuration__ window in UI with clipboard output of pbcopy cmd  |
 |       |                 | ```pbcopy < $TAKEOVER_ROOT/takeover-templates/ControlPlaneTemplate.yaml```   |
 |       | **Enter:**      | Kubernetes_Version, AMI_ID, Control Plane Machine Type #from ControlPlaneTemplate.yaml |
-Nodes Config - NodePools<br>WORKER-POOL-CONFIGURATION
+Nodes Config - NodePools<br>WORKER-POOL-CONFIG
 | 11    | **Copy/Paste:** | Replace contents of __Node pool configuration__ window in UI with clipboard output of pbcopy cmd  |
 |       |                 | ```pbcopy < $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-0.yaml``` |
 |       | **Enter:**      | Kubernetes_Version, AMI_ID, Control Plane Machine Type #from WorkerTemplate-0.yaml |

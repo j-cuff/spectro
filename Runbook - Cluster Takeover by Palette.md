@@ -1,38 +1,22 @@
 # Runbook \- Cluster Takeover by Palette
 
-[Introduction](#introduction)
-
-[Scope](#heading=h.2ev92ijii3wg)
-
-[Audience](#audience)
-
-[Glossary](#glossary)
-
-[Takeover Process](#takeover-process)
-
-[Preparation](#preparation-&-general-requirements)
-
-[Requirements](#heading=h.w5acs89y9j8s)
-
-[Assessment & Planning](#heading=h.1645spxerhi8)
-
-[Takeover Step by Step](#takeover-step-by-step)
-
-[Readiness Assessment](#readiness-assessment)
-
-[Discovery & Cloud Preparation](#discovery-&-cloud-preparation)
-
-[Pre-takeover Readiness & Preparation](#pre-takeover-readiness-&-preparation)
-
-[Takeover Inception](#takeover-inception)
-
-[Onboarding & Rollout](#onboarding-&-rollout)
-
-[Validation & Cleaning](#validation-&-cleaning)
-
-[Troubleshooting](#troubleshooting)
-
-[Parking](#heading=h.l561fa8qwc1d)
+[Introduction](#introduction)  
+[Scope](#heading=h.2ev92ijii3wg)  
+[Audience](#audience)  
+[Glossary](#glossary)  
+[Takeover Process](#takeover-process)  
+[Preparation](#preparation-&-general-requirements)  
+[Requirements](#heading=h.w5acs89y9j8s)  
+[Assessment & Planning](#heading=h.1645spxerhi8)  
+[Takeover Step by Step](#takeover-step-by-step)  
+[Readiness Assessment](#readiness-assessment)  
+[Discovery & Cloud Preparation](#discovery-&-cloud-preparation)  
+[Pre-takeover Readiness & Preparation](#pre-takeover-readiness-&-preparation)  
+[Takeover Inception](#takeover-inception)  
+[Onboarding & Rollout](#onboarding-&-rollout)  
+[Validation & Cleaning](#validation-&-cleaning)  
+[Troubleshooting](#troubleshooting)  
+[Parking](#heading=h.l561fa8qwc1d)  
 
 # Introduction {#introduction}
 
