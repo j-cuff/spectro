@@ -19,11 +19,25 @@
 - ```shell
   export TC_NAME=<takeover-cluster-name>
   ```
-> ### Create working directory: $HOME/workspace/spectro
+> ### Create working directory within $HOME
 - This is important for the flow of commands in this document.  
 - ```shell
-  mkdir -p $HOME/workspace && cd $HOME/workspace && git clone https://github.com/j-cuff/spectro.git && mv $HOME/workspace/spectro/clustername $HOME/workspace/spectro/$TC_NAME && cd $HOME/workspace/spectro/$TC_NAME/takeover-files && export TAKEOVER_ROOT=$(pwd) && echo $TAKEOVER_ROOT && echo "SUCCESS" || echo "ERROR"
+  mkdir -p $HOME/workspace && cd $_ && git clone https://github.com/j-cuff/spectro.git && mv $HOME/workspace/spectro/clustername $HOME/workspace/spectro/$TC_NAME && cd $_/takeover-files && export TAKEOVER_ROOT=$(pwd) && echo $TAKEOVER_ROOT && echo "SUCCESS" || echo "ERROR"
   ```
+> ### Palette FQDN (ex. vertex.mydomain.com)
+- ```shell
+  export PALETTE_URL=<gui.palette.spectro.com>
+  ```
+> ### Create clusterctl.yaml file 
+- ```shell
+  echo -e "overridesFolder: $TAKEOVER_ROOT/overrides\n\n\nCLUSTERCTL_LOG_LEVEL: 5" > $TAKEOVER_ROOT/clusterctl.yaml
+  ```
+> ### Setup palettectl cli, add it to the PATH (provided by spectro)
+- Note: Palettectl should be run from linux server  
+- ```shell
+  cp <provided palettectl file> $TAKEOVER_ROOT/bin/palettectl && chmod +x $_ && export PATH=$PATH:$TAKEOVER_ROOT/bin/ && echo "SUCCESS" || echo "ERROR"
+  ```
+## Prepare Takeover Source Cluster and TKG-MGMT Cluster Resources
 > ### SET Full Path to Takeover Cluster Admin Kubeconfig
 - Move Takeover Cluster Admin KubeConfig to \$HOME/workspace/spectro/\$TC_NAME/configs<tc-admin-kube.config>  
 - ```shell
@@ -32,27 +46,8 @@
 > ### SET Full Path to TKG-MGMT Cluster Admin Kubeconfig
 - Move TKG-MGMT Cluster Admin KubeConfig to \$HOME/workspace/spectro/\$TC_NAME/configs<tkg-mgmt-kube.config>  
 - ```shell
-  export TKG_MGMT_KUBECONFIG="$HOME/workspace/spectro/$TC_NAME/configs/<tkg-mgmt-kube.config>"x
+  export TKG_MGMT_KUBECONFIG="$HOME/workspace/spectro/$TC_NAME/configs/<tkg-mgmt-kube.config>"
   ```
-> ### Palette FQDN (ex. vertex.mydomain.com)
-- ```shell
-  export PALETTE_URL=<gui.palette.spectro.com>
-  ```
-> ### Create Dir structure, Extract takeover files, set TAKEOVER_ROOT
-- single command below  
-- ```shell
-  cd $HOME/workspace/spectro/$TC_NAME/takeover-files && export TAKEOVER_ROOT=$(pwd) && echo $TAKEOVER_ROOT && echo "SUCCESS" || echo "ERROR"
-  ```
-> ### Setup palettectl cli, add it to the PATH
-- Note: This should be run from linux server  
-- ```shell
-  cp $TAKEOVER_ROOT/bin/palettectl-$(arch) $TAKEOVER_ROOT/bin/palettectl && chmod +x $TAKEOVER_ROOT/bin/palettectl && export PATH=$PATH:$TAKEOVER_ROOT/bin/ && echo "SUCCESS" || echo "ERROR"
-  ```
-> ### Create clusterctl.yaml file 
-- ```shell
-  echo -e "overridesFolder: $TAKEOVER_ROOT/overrides\n\n\nCLUSTERCTL_LOG_LEVEL: 5" > $TAKEOVER_ROOT/clusterctl.yaml
-  ```
-## Prepare Takeover Source Cluster and TKG-MGMT Cluster Resources
 > ### SWITCH to TKG-MGMT Cluster Context
 - ```shell
   export KUBECONFIG=$TKG_MGMT_KUBECONFIG
@@ -98,47 +93,39 @@ Cluster Profile
 | 7     | **Select:** | Infra Profile Name |
 | 8     | **Click:**  | Confirm / Next  |
 Cluster Config Macros
-| 9     | **Copy/Paste:** | Replace contents of __Cluster configuration__ window in UI with clipboard output of pbcopy cmd  |
-|       |                 | ```pbcopy < $TAKEOVER_ROOT/takeover-templates/ClusterTemplate.yaml``` |
+| 9     | **Copy/Paste:** | Replace contents of __Cluster configuration__ window in UI with contents of: $TAKEOVER_ROOT/takeover-templates/ClusterTemplate.yaml |
 |       | **Enter:**      | AWS_REGION #from clustertemplate.yaml |
 |       | **Enter:**      | AWS_SSH_KEY_NAME #from clustertemplate.yaml |
 Nodes Config - NodePools<br>CONTROL-PLANE-POOL CONFIG
-| 10    | **Copy/Paste:** | Replace contents of __Node pool configuration__ window in UI with clipboard output of pbcopy cmd  |
-|       |                 | ```pbcopy < $TAKEOVER_ROOT/takeover-templates/ControlPlaneTemplate.yaml```   |
+| 10    | **Copy/Paste:** | Replace contents of __Node pool configuration__ window in UI with contents of: $TAKEOVER_ROOT/takeover-templates/ControlPlaneTemplate.yaml |
 |       | **Enter:**      | Kubernetes_Version, AMI_ID, Control Plane Machine Type #from ControlPlaneTemplate.yaml |
 Nodes Config - NodePools<br>WORKER-POOL-CONFIG
-| 11    | **Copy/Paste:** | Replace contents of __Node pool configuration__ window in UI with clipboard output of pbcopy cmd  |
-|       |                 | ```pbcopy < $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-0.yaml``` |
+| 11    | **Copy/Paste:** | Replace contents of __Node pool configuration__ window in UI with contents of: $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-0.yaml |
 |       | **Enter:**      | Kubernetes_Version, AMI_ID, Control Plane Machine Type #from WorkerTemplate-0.yaml |
 |       | **REPEAT:**     | Repeat step 11 for each WorkerTemplate-x.yaml by clicking "Add Node Pool" |
 |       |                 | **If Necessary** |
-|       |                 | ```pbcopy < $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-1.yaml``` |
-|       |                 | <CLS_NAME>-md-1; paste clipboard into Node Pool Configuration window |
-|       |                 | ```pbcopy < $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-2.yaml``` |
-|       |                 | <CLS_NAME>-md-2; paste clipboard into Node Pool Configuration window |
+|       |                 | $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-1.yaml |
+|       |                 | <CLS_NAME>-md-1; paste contents into Node Pool Configuration window |
+|       |                 | $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-2.yaml``` |
+|       |                 | <CLS_NAME>-md-2; paste contents into Node Pool Configuration window |
 DO NOT CLICK NEXT
-| 12    | **Click:**      | Click the API button (Top Right Corner) and copy out the raw json payload. |
+| 12    | **Click:**      | Click the API button (Top Right Corner) and copy out the raw json payload to an editor of your choice. |
 |       |                 | This will be used as the body for a POST API Call |
-```
-1.  pbcopy < $TAKEOVER_ROOT/takeover-templates/ClusterTemplate.yaml
-2.  pbcopy < $TAKEOVER_ROOT/takeover-templates/ControlPlaneTemplate.yaml
-3.  pbcopy < $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-0.yaml
-IF Necessary:
-4.  pbcopy < $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-1.yaml
-5.  pbcopy < $TAKEOVER_ROOT/takeover-templates/WorkerTemplate-2.yaml
-```
 - Edit Payload to include:  
 ``` "clusterType": "PureAttach", ``` immediately under spec:   
 - Edit Payload to include:  
 ``` "patchOnBoot": false, ``` and ``` "rebootIfRequired": false ```
-
+- Save as $TAKEOVER_ROOT/takeover-templates/api-payload.json
 ## POST JSON Payload to palette api
 ```
-curl statement
+curl --location 'https://$PALETTE_URL/v1/spectroclusters/cloudTypes/aws-tkg?ProjectUid=$PROJECT_UID' \
+  -H "Authorization: $AUTH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "@$TAKEOVER_ROOT/takeover-templates/api-payload.json"
 ```
 - Verify success (201) as well as a CID.  Copy CID and set to CL_UID var.
 ```
-CL_UID="paste from POST result"
+export CL_UID="<paste from curl POST result>" 
 ```
 ## Switch to Takeover Cluster Context:
 ```
@@ -151,7 +138,7 @@ kubectl config get-contexts
 kubectl create ns cluster-$CL_UID  
 kubectl annotate ns cluster-$CL_UID clusterEnv=target
 
-export AWS_REGION=us-east-1  
+export AWS_REGION=<aws region>  
 export AWS_ACCESS_KEY_ID="tkg-provisioner ACCESS KEY"  
 export AWS_SECRET_ACCESS_KEY="tkg-provsioner SECRET ACCESS KEY"  
 export AWS_B64ENCODED_CREDENTIALS=$(clusterawsadm bootstrap credentials encode-as-profile)
@@ -176,20 +163,12 @@ kubectl config get-contexts
 ```
 - Validate Takeover Cluster Context
 ## Complete Takeover Process by Applying SpectroCluster Manifest to Takeover Cluster
-AS TAKEOVER CLUSTER CONTEXT  
+- AS TAKEOVER CLUSTER CONTEXT  
 ```
-kubectl apply -f 
+kubectl apply -f https://$PALETTE_URL/v1/spectroclusters/$CL_UID/import/manifest
 ```
 
 # Validation
 
-PROJECT_UID="<projectid>"
-AUTH_TOKEN="ey..."
-API_PAYLOAD_FILE="/Full/Path"
-
-curl --location 'https://$PALETTE_URL/v1/spectroclusters/cloudTypes/awstkg?ProjectUid=$PROJECT_UID' \
-  --header 'Authorization: $AUTH_TOKEN' \
-  -H 'Content-Type: application/json' \
-  -d '@api-payload.json'
 
 
