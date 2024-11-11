@@ -62,8 +62,8 @@
 
 > ### AS TKG-MGMT Context: Validate TKG-MGMT Cluster is managing the Takeover Cluster
 - ```shell
-  CLS_NAME=$(kubectl get cluster $TC_NAME -o=jsonpath='{.spec.infrastructureRef.name}') && echo "Found: $CLS_NAME" || echo "NotFound: ERROR"
-  CLS_NAMESPACE=$(kubectl get cluster $TC_NAME -o=jsonpath='{.spec.infrastructureRef.namespace}') && echo "Found: $CLS_NAMESPACE" || echo "Not Found: ERROR"
+  export CLS_NAME=$(kubectl get cluster $TC_NAME -o=jsonpath='{.spec.infrastructureRef.name}') && echo "Found: $CLS_NAME" || echo "NotFound: ERROR"
+  export CLS_NAMESPACE=$(kubectl get cluster $TC_NAME -o=jsonpath='{.spec.infrastructureRef.namespace}') && echo "Found: $CLS_NAMESPACE" || echo "Not Found: ERROR"
   ```
 > ### AS TKG-MGMT Context: Delete Autoscaler Deployment for Takoever Cluster from TKG-MGMT if it exists
 - ```shell
@@ -71,7 +71,7 @@
   ```
 - If it exists:
 - ```shell
-  kubectl delete deployment $CLS_NAME-cluser-autoscaler -n $CLS_NAMESPACE
+  kubectl delete deployment $CLS_NAME-cluster-autoscaler -n $CLS_NAMESPACE
   ```
 ## Begin Takeover Procedures
 > ### Export Cluster Templates from TKG-MGMT Cluster 
@@ -82,6 +82,8 @@
 - ```shell
   code $TAKEOVER_ROOT/takeover-templates
   ```
+cluster profile
+
 > ### Generate API Payload to Register a Ghost Cluster with Palette within the Palette GUI
 | Order | Command     | Action                           |
 |-------|-------------|----------------------------------|
@@ -176,7 +178,7 @@ kubectl config get-contexts
 ## Complete Takeover Process by Applying SpectroCluster Manifest to Takeover Cluster
 AS TAKEOVER CLUSTER CONTEXT  
 ```
-kubectl apply -f https://$PALETTE_URL/v1/spectroclusters/$CL_UID/import/manifest
+kubectl apply -f 
 ```
 
 # Validation
