@@ -1,8 +1,8 @@
-- From: git clone https://github.com/j-cuff/spectro.git
+# Step 1 Before cloning git repo
 # SpectroCloud Cluster Takeover Procedure
 > ### Utilize the Runbook as the source of truth
 - [Runbook](Runbook.md)
-- https://docs.google.com/document/d/1BMvVPqmgnBNipwGqcMTLnRaM3BDTVPijYSmMowDH29E (internal)
+- https://docs.google.com/document/d/1BMvVPqmgnBNipwGqcMTLnRaM3BDTVPijYSmMowDH29E (internal only)
 > ### Upgrade Palette Vertex to the latest available version
 - This allows for all bug fixes, security updates, and features to be utilized for the takeover.
 - Current Required Version = 4.5.4
@@ -20,28 +20,28 @@
   export TC_NAME=<takeover-cluster-name>
   ```
 > ### Create working directory: $HOME/workspace/spectro
-- This is important for the flow of this document  
+- This is important for the flow of commands in this document.  
 - ```shell
-  mkdir -p $HOME/workspace/spectro
+  mkdir -p $HOME/workspace && cd $HOME/workspace && git clone https://github.com/j-cuff/spectro.git && mv $HOME/workspace/spectro/clustername $HOME/workspace/spectro/$TC_NAME && cd $HOME/workspace/spectro/$TC_NAME/takeover-files && export TAKEOVER_ROOT=$(pwd) && echo $TAKEOVER_ROOT && echo "SUCCESS" || echo "ERROR"
   ```
 > ### SET Full Path to Takeover Cluster Admin Kubeconfig
-- Move Takeover Cluster Admin KubeConfig to \$HOME/workspace/spectro/tc-admin-kube.config  
+- Move Takeover Cluster Admin KubeConfig to \$HOME/workspace/spectro/\$TC_NAME/configs<tc-admin-kube.config>  
 - ```shell
-  export TC_ADMIN_KUBECONFIG="$HOME/workspace/spectro/tc-admin-kube.config"
+  export TC_ADMIN_KUBECONFIG="$HOME/workspace/spectro/$TC_NAME/configs/<tc-admin-kube.config>"
   ```
 > ### SET Full Path to TKG-MGMT Cluster Admin Kubeconfig
-- Move TKG-MGMT Cluster Admin KubeConfig to \$HOME/workspace/spectro/tkg-mgmt-kube.config  
+- Move TKG-MGMT Cluster Admin KubeConfig to \$HOME/workspace/spectro/\$TC_NAME/configs<tkg-mgmt-kube.config>  
 - ```shell
-  export TKG_MGMT_KUBECONFIG="$HOME/workspace/spectro/tkg-mgmt-kube.config"
+  export TKG_MGMT_KUBECONFIG="$HOME/workspace/spectro/$TC_NAME/configs/<tkg-mgmt-kube.config>"x
   ```
 > ### Palette FQDN (ex. vertex.mydomain.com)
 - ```shell
-  export PALETTE_URL=palette.takeover.global.lmco.com
+  export PALETTE_URL=<gui.palette.spectro.com>
   ```
 > ### Create Dir structure, Extract takeover files, set TAKEOVER_ROOT
 - single command below  
 - ```shell
-  mkdir -p $HOME/workspace/spectro/$TC_NAME && tar -xvf $HOME/workspace/spectro/takeoverfiles.tar.gz -C $HOME/workspace/spectro/$TC_NAME && cd $HOME/workspace/spectro/$TC_NAME/takeover-files && export TAKEOVER_ROOT=$(pwd) && echo $TAKEOVER_ROOT && echo "SUCCESS" || echo "ERROR"
+  cd $HOME/workspace/spectro/$TC_NAME/takeover-files && export TAKEOVER_ROOT=$(pwd) && echo $TAKEOVER_ROOT && echo "SUCCESS" || echo "ERROR"
   ```
 > ### Setup palettectl cli, add it to the PATH
 - Note: This should be run from linux server  
