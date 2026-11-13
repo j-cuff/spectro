@@ -1,0 +1,17 @@
+{
+  "addonType": "system app",
+  "annotations": {
+    "source": "community",
+    "contributor": "spectrocloud"
+  },
+  "cloudTypes": [
+    "all"
+  ],
+  "displayName": "Kernel Module Management (KMM)",
+  "charts": [
+    "charts/kernel-module-management-2.7.0.tgz"
+  ],
+  "layer": "addon",
+  "name": "kernel-module-management",
+  "version": "2.7.0"
+}

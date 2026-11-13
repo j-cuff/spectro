@@ -1,0 +1,31 @@
+# Kernel Module Management (KMM) operator
+#
+# Loads out-of-tree kernel modules on nodes from container images, driven by
+# Module custom resources. Requires cert-manager (for the webhook certificate),
+# so place the cert-manager pack below this pack in the profile.
+
+pack:
+  namespace: kmm-operator-system
+  content:
+    images:
+      - image: gcr.io/k8s-staging-kmm/kernel-module-management-operator:v20260812-v1.0.0-713-g2997771
+      - image: gcr.io/k8s-staging-kmm/kernel-module-management-webhook-server:v20260812-v1.0.0-713-g2997771
+      - image: gcr.io/k8s-staging-kmm/kernel-module-management-worker:v20260812-v1.0.0-713-g2997771
+      - image: gcr.io/k8s-staging-kmm/kernel-module-management-signimage:v20260812-v1.0.0-713-g2997771
+      - image: gcr.io/kaniko-project/executor:v1.23.2
+
+charts:
+  kernel-module-management:
+    # KMM does not publish semver-tagged images. These tags are the
+    # gcr.io/k8s-staging-kmm builds of the v2.7.0 release commit (2997771).
+    images:
+      # -- KMM operator (controller manager)
+      operator: gcr.io/k8s-staging-kmm/kernel-module-management-operator:v20260812-v1.0.0-713-g2997771
+      # -- KMM validating webhook server
+      webhookServer: gcr.io/k8s-staging-kmm/kernel-module-management-webhook-server:v20260812-v1.0.0-713-g2997771
+      # -- Worker image that loads and unloads kernel modules on each node
+      worker: gcr.io/k8s-staging-kmm/kernel-module-management-worker:v20260812-v1.0.0-713-g2997771
+      # -- Image used only when a Module asks KMM to sign a kernel module
+      signer: gcr.io/k8s-staging-kmm/kernel-module-management-signimage:v20260812-v1.0.0-713-g2997771
+      # -- Image used only when a Module asks KMM to build a kernel module in-cluster
+      builder: gcr.io/kaniko-project/executor:v1.23.2

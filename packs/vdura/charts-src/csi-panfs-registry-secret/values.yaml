@@ -1,0 +1,16 @@
+# -- Create the pull secret. Set to false if you create it yourself, or if the
+# registry that serves the PanFS DFC/KMM images does not need credentials.
+create: true
+
+# -- Secret name. Must match the first entry of the csi-panfs chart's imagePullSecrets.
+name: panfs-registry
+
+registry:
+  # -- Registry host that serves the PanFS DFC/KMM images, e.g. registry.example.com (host only, no path)
+  server: ""
+  # -- Registry username
+  username: ""
+  # -- Registry password or token
+  password: ""
+  # -- Optional email for the registry account
+  email: ""

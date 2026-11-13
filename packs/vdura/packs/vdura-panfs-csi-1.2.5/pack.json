@@ -1,0 +1,30 @@
+{
+  "addonType": "system app",
+  "annotations": {
+    "source": "community",
+    "contributor": "spectrocloud"
+  },
+  "cloudTypes": [
+    "all"
+  ],
+  "displayName": "VDURA PanFS CSI Driver",
+  "charts": [
+    "charts/csi-panfs-registry-secret-1.0.0.tgz",
+    "charts/csi-panfs-1.2.5.tgz",
+    "charts/csi-panfs-storageclass-1.2.5.tgz"
+  ],
+  "layer": "addon",
+  "name": "vdura-panfs-csi",
+  "version": "1.2.5",
+  "constraints": {
+    "dependencies": [
+      {
+        "packName": "kubernetes",
+        "layer": "k8s",
+        "minVersion": "1.30",
+        "maxVersion": "",
+        "type": "optional"
+      }
+    ]
+  }
+}

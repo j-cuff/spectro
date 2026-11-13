@@ -1,0 +1,12 @@
+apiVersion: v2
+name: kernel-module-management
+description: >-
+  Kernel Module Management (KMM) operator from kubernetes-sigs/kernel-module-management.
+  The templates are the upstream config/default kustomization, rendered by
+  scripts/build.sh and made namespace-agnostic.
+type: application
+version: 2.7.0
+appVersion: "v2.7.0"
+home: https://kmm.sigs.k8s.io/
+sources:
+  - https://github.com/kubernetes-sigs/kernel-module-management

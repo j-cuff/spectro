@@ -1,0 +1,8 @@
+apiVersion: v2
+name: csi-panfs-registry-secret
+description: >-
+  Creates the image pull secret the VDURA PanFS CSI driver uses to pull the
+  PanFS DFC and KMM images from VDURA's private registry.
+type: application
+version: 1.0.0
+appVersion: "1.2.5"

@@ -1,0 +1,326 @@
+# VDURA PanFS CSI Driver
+#
+# Installs three Helm charts into the pack namespace:
+#   csi-panfs-registry-secret  pull secret for VDURA's private PanFS DFC/KMM images
+#   csi-panfs                  CSI controller, node plugin, CSIDriver, and the KMM Module
+#                              that loads the panfs kernel module on each client node
+#   csi-panfs-storageclass     PanFS realm credentials Secret and the StorageClass
+#
+# Search this file for "REQUIRED" to find every value you must set.
+# Put passwords and private keys in sensitive Palette profile variables
+# rather than typing them here (see the pack README).
+#
+# Profile layer order (bottom to top): cert-manager, kernel-module-management,
+# then this pack. Not needed if kmm.enabled is false.
+
+pack:
+  # The driver names its service accounts after this namespace. If you change it,
+  # also change kmm.nodeReadyLabel.name and csiPanFSDriver.namespace below.
+  namespace: csi-panfs
+  namespaceLabels:
+    # The node plugin and the KMM worker pods are privileged.
+    "csi-panfs": "pod-security.kubernetes.io/enforce=privileged,pod-security.kubernetes.io/audit=privileged,pod-security.kubernetes.io/warn=privileged"
+  releaseNameOverride:
+    # The release name becomes the StorageClass name (and its credentials Secret name).
+    csi-panfs-storageclass: csi-panfs-storage-class
+  content:
+    images:
+      - image: ghcr.io/panasasinc/panfs-container-storage-interface-oss/panfs-csi-driver:1.2.5
+      - image: registry.k8s.io/sig-storage/csi-provisioner:v5.3.0
+      - image: registry.k8s.io/sig-storage/csi-attacher:v4.9.0
+      - image: registry.k8s.io/sig-storage/csi-resizer:v1.13.2
+      - image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.0
+      # The panfs-dfc and panfs-kmm images come from VDURA's private registry and
+      # are not listed here. Mirror them yourself for air-gapped clusters.
+
+charts:
+  csi-panfs-registry-secret:
+    # -- Create the pull secret. Set to false if you create it yourself, or if the
+    # registry that serves the PanFS DFC/KMM images does not need credentials.
+    create: true
+
+    # -- Secret name. Must match csi-panfs.imagePullSecrets below.
+    name: panfs-registry
+
+    registry:
+      # -- REQUIRED (when create is true): registry host, e.g. registry.example.com (host only, no path)
+      server: ""
+      # -- REQUIRED (when create is true): registry username
+      username: ""
+      # -- REQUIRED (when create is true): registry password or token
+      password: ""
+      # -- Optional email for the registry account
+      email: ""
+
+  csi-panfs:
+    # Controller server configuration
+    controllerServer:
+      # -- Number of controller replicas
+      replicaCount: 3
+      # -- Enable host networking for controller pods
+      hostNetwork: true
+      # -- Deployment strategy type
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+          maxSurge: 1
+
+      # -- Priority class for controller pods
+      priorityClassName: system-cluster-critical
+
+      # -- Affinity rules for controller pods
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - csi-panfs-controller
+                topologyKey: "kubernetes.io/hostname"
+
+      # -- PodDisruptionBudget for controller server
+      podDisruptionBudget:
+        minAvailable: 1
+
+      # CSI provisioner sidecar (upstream points at k8s.gcr.io; same version from registry.k8s.io)
+      provisioner:
+        image: registry.k8s.io/sig-storage/csi-provisioner:v5.3.0
+        pullPolicy: IfNotPresent
+        logLevel: 5
+        timeout: 60s
+        workerThreads: 5
+        retryIntervalStart: 5s
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 300m
+            memory: 300Mi
+
+      # CSI attacher sidecar
+      attacher:
+        image: registry.k8s.io/sig-storage/csi-attacher:v4.9.0
+        pullPolicy: IfNotPresent
+        logLevel: 5
+        timeout: 60s
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+
+      # CSI resizer sidecar (upstream points at the k8s staging registry; same version from registry.k8s.io)
+      resizer:
+        image: registry.k8s.io/sig-storage/csi-resizer:v1.13.2
+        pullPolicy: IfNotPresent
+        logLevel: 5
+        timeout: 60s
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+
+      # -- Tolerations for controller pods
+      tolerations: []
+      # Allow scheduling on control-plane nodes:
+      # - key: "node-role.kubernetes.io/control-plane"
+      #   operator: "Exists"
+      #   effect: "NoSchedule"
+
+    # Node server configuration
+    nodeServer:
+      # -- Priority class for node pods
+      priorityClassName: system-cluster-critical
+
+      # CSI node driver registrar sidecar
+      driverRegistrar:
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.0
+        pullPolicy: IfNotPresent
+        logLevel: 5
+        timeout: 60s
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+
+      # -- Nodes that run the PanFS node plugin. Only used when kmm.enabled is false;
+      # with KMM, the plugin runs wherever KMM loaded the kernel module.
+      # Upstream selects node-role.kubernetes.io/worker, which kubelets cannot set on
+      # themselves, so it is often missing. Add this label to the node pools that
+      # should mount PanFS (node pool "Additional Labels" in the cluster config).
+      # Helm merges this map with the chart default, so the upstream key is set to
+      # null to remove it.
+      selector:
+        node-role.kubernetes.io/worker: null
+        panfs.csi.vdura.com/client: "true"
+
+      # -- Tolerations for node pods
+      tolerations:
+        - operator: "Exists"
+
+      updateStrategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 100%
+
+    # -- SELinux integration for the node plugin. Mounts /sys/fs/selinux and /etc/selinux
+    # from the host, so set to false on nodes without SELinux (for example, Ubuntu).
+    seLinux: true
+
+    dfc:
+      # -- REQUIRED: PanFS DFC release version (image tag) provided by VDURA
+      version: ""
+      # -- REQUIRED: registry and path that hold the panfs-dfc and panfs-kmm images,
+      # e.g. registry.example.com/vdura
+      privateRegistry: ""
+      # -- Image pull policy for the DFC image
+      pullPolicy: Always
+
+    kmm:
+      # -- Load the panfs kernel module with KMM. Requires the kernel-module-management
+      # pack (and cert-manager) below this pack. Set to false only if every client
+      # node already has the panfs module installed and loaded.
+      enabled: true
+
+      # -- Image pull policy for the KMM module image
+      pullPolicy: Always
+
+      # -- Label KMM puts on a node once the panfs module is loaded.
+      # Format: kmm.node.kubernetes.io/<pack namespace>.panfs.ready
+      nodeReadyLabel:
+        name: kmm.node.kubernetes.io/csi-panfs.panfs.ready
+        value: ""
+
+      # -- Nodes where KMM loads the panfs kernel module (see nodeServer.selector).
+      # The null entry removes the upstream default key.
+      selector:
+        node-role.kubernetes.io/worker: null
+        panfs.csi.vdura.com/client: "true"
+
+      # -- Load libwolfssl with panfs (needed for end-to-end volume encryption)
+      encryptionSupport: true
+
+      # -- REQUIRED: kernel module image for each node kernel. Replace <REGISTRY> and
+      # <DFC_VERSION> with the dfc.privateRegistry and dfc.version values above.
+      # KMM fills in ${KERNEL_FULL_VERSION} with each node's kernel version, so VDURA
+      # must provide a panfs-kmm image for every kernel your nodes run. The default
+      # regexp matches RHEL-family x86_64 kernels (for example 5.14.0-503.el9.x86_64).
+      kernelMappings:
+        - regexp: '^.*.x86_64$'
+          containerImage: "<REGISTRY>/panfs-kmm:${KERNEL_FULL_VERSION}-<DFC_VERSION>"
+
+    # -- Labels for the CSI driver workloads
+    labels: {}
+
+    # -- Image pull secrets for the private DFC/KMM registry. Created by the
+    # csi-panfs-registry-secret chart above.
+    imagePullSecrets:
+      - panfs-registry
+
+    csi:
+      # -- Image for the PanFS CSI plugin
+      image: ghcr.io/panasasinc/panfs-container-storage-interface-oss/panfs-csi-driver:1.2.5
+      # -- Image pull policy for the PanFS CSI plugin
+      pullPolicy: Always
+      # -- Log level for the PanFS CSI plugin
+      logLevel: 5
+
+      # -- SELinux options for the node plugin (used when seLinux is true)
+      seLinuxOptions:
+        user: system_u
+        role: system_r
+        type: container_t
+        level: s0
+
+      # -- Resource requests and limits for the PanFS CSI plugin
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+        limits:
+          cpu: 300m
+          memory: 600Mi
+
+      # -- Whether NodePublishVolume is called periodically for published volumes
+      requiresRepublish: false
+      # -- SELinux mount support for the CSI driver
+      seLinuxMount: true
+      # -- fsGroup handling policy
+      fsGroupPolicy: File
+
+  csi-panfs-storageclass:
+    csiPanFSDriver:
+      # -- Namespace of the PanFS CSI driver. Must match pack.namespace.
+      namespace: csi-panfs
+
+    # -- Allowed topologies for volume provisioning. Empty means no constraints.
+    allowedTopologies: {}
+    # - matchLabelExpressions:
+    #   - key: node.kubernetes.io/csi-panfs.panfs.ready
+    #     values:
+    #       - "true"
+
+    # PanFS realm connection. Set username plus either password or privateKey.
+    realm:
+      # -- REQUIRED: PanFS realm address (hostname or IP)
+      address: ""
+      # -- REQUIRED: PanFS realm username
+      username: ""
+      # -- Realm password (use a sensitive profile variable)
+      password: ""
+      # -- Realm SSH private key, as an alternative to a password
+      privateKey: ""
+      # -- Passphrase for privateKey
+      privateKeyPassphrase: ""
+      # -- KMIP client configuration, needed only for encrypted volumes
+      kmipConfigData: ""
+
+    # -- Make this the cluster's default StorageClass
+    setAsDefaultStorageClass: false
+
+    # -- Allow expansion of provisioned volumes
+    allowVolumeExpansion: true
+
+    # -- Reclaim policy for provisioned volumes: Delete or Retain
+    volumeReclaimPolicy: Delete
+
+    # -- Volume binding mode: Immediate or WaitForFirstConsumer
+    volumeBindingMode: WaitForFirstConsumer
+
+    # -- PanFS volume create parameters. See the PanFS documentation for your release.
+    parameters:
+      panfs.csi.vdura.com/storageset: "Set 1"
+      panfs.csi.vdura.com/recoverypriority: "50"
+      panfs.csi.vdura.com/efsa: "retry"
+      panfs.csi.vdura.com/layout: "raid6+"
+      panfs.csi.vdura.com/maxwidth: 3
+      panfs.csi.vdura.com/stripeunit: "64k"
+      panfs.csi.vdura.com/rgwidth: 3
+      panfs.csi.vdura.com/rgdepth: 2
+      panfs.csi.vdura.com/operm: "all"
+      panfs.csi.vdura.com/description: "PanFS CSI Storage Class"
+      # panfs.csi.vdura.com/volservice: "volserviceid"
+      # panfs.csi.vdura.com/user: username
+      # panfs.csi.vdura.com/group: groupname
+      # panfs.csi.vdura.com/uperm: "all"
+      # panfs.csi.vdura.com/gperm: "write-execute"
+      # -- End-to-end encryption: "on" or "off". "on" needs realm.kmipConfigData
+      # and kmm.encryptionSupport.
+      panfs.csi.vdura.com/encryption: "off"
+
+    # -- Mount options for provisioned volumes
+    mountOptions: []
