@@ -16,7 +16,7 @@ Cluster profile add-on layers, bottom to top:
 ## What you need from VDURA
 
 - Credentials for the private registry that serves the `panfs-dfc` and `panfs-kmm` images.
-- The DFC release version.
+- The DFC release version, and confirmation that it is supported with driver 1.2.5. Driver 1.2.5 loads the encryption module as `libwolfssl` and reads the `storageset` StorageClass parameter, where 1.2.3 used `wolfssl` and `bladeset`. See the [pack README](packs/vdura-panfs-csi-1.2.5/README.md#prerequisites).
 - Confirmation that `panfs-kmm` images exist for the exact kernel your Palette nodes run. KMM picks the image by kernel version, and the default mapping matches RHEL-family x86_64 kernels.
 
 ## Layout

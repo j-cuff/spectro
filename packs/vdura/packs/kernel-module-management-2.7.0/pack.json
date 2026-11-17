@@ -2,7 +2,9 @@
   "addonType": "system app",
   "annotations": {
     "source": "community",
-    "contributor": "spectrocloud"
+    "contributor": "spectrocloud",
+    "description": "Kernel Module Management operator, which builds, signs, and loads out-of-tree kernel modules on cluster nodes",
+    "docsURL": "https://kmm.sigs.k8s.io/"
   },
   "cloudTypes": [
     "all"

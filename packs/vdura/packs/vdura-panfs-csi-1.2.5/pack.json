@@ -2,7 +2,9 @@
   "addonType": "system app",
   "annotations": {
     "source": "community",
-    "contributor": "spectrocloud"
+    "contributor": "spectrocloud",
+    "description": "VDURA PanFS CSI driver, with the registry pull secret and a StorageClass for a PanFS realm",
+    "docsURL": "https://github.com/panasasinc/panfs-container-storage-interface-oss/blob/1.2.5/docs/Usage-Guide.md"
   },
   "cloudTypes": [
     "all"

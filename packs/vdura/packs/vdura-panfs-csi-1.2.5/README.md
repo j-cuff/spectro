@@ -14,6 +14,9 @@ The pack installs three Helm charts into the `csi-panfs` namespace:
 
 - Kubernetes 1.30.1 or later.
 - Access to VDURA's private registry, with `panfs-dfc` and `panfs-kmm` images built for the exact kernel your client nodes run. Get the registry details, credentials, and DFC release version from VDURA.
+- A DFC and PanFS release that VDURA supports with driver 1.2.5. Driver 1.2.5 differs from 1.2.3 in two ways that depend on that release:
+  - With `kmm.encryptionSupport: true`, KMM loads the encryption module as `libwolfssl` (1.2.3 used `wolfssl`), so the `panfs-kmm` image must ship it under that name.
+  - The StorageClass parameter for the storage set is `panfs.csi.vdura.com/storageset`. The driver ignores the 1.2.3 parameter, `panfs.csi.vdura.com/bladeset`, so don't copy StorageClass values from a 1.2.3 deployment.
 - Network access from every client node to the PanFS realm on the ports listed in the PanFS documentation.
 - PanFS realm credentials: a username plus either a password or an SSH private key.
 - The **cert-manager** pack and the **Kernel Module Management (KMM)** pack, placed below this pack in the cluster profile. You can skip both only if every client node already has the `panfs` kernel module loaded and you set `kmm.enabled: false`.

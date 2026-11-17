@@ -302,6 +302,7 @@ charts:
     volumeBindingMode: WaitForFirstConsumer
 
     # -- PanFS volume create parameters. See the PanFS documentation for your release.
+    # Driver 1.2.5 reads storageset; it ignores the 1.2.3 name, bladeset.
     parameters:
       panfs.csi.vdura.com/storageset: "Set 1"
       panfs.csi.vdura.com/recoverypriority: "50"
